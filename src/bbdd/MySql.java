@@ -53,7 +53,9 @@ public class MySql {
             while (rs.next()) {
                 id = rs.getInt(1) + 1;
             }
-
+            //NOS INTERESA QUE EN LA BASE DE DATOS
+            //TODO SE GUARDE EN MAYÚSCULAS
+            //DE AHÍ LA FUNCIÓN UPPER
             String Query = "INSERT INTO janillo.al_alumnos(id_alumno, nombre, apellidos, telefono, direccion,sexo, dni) VALUES("
                     + "upper(\"" + id + "\"), "
                     + "upper(\"" + nombre + "\"), "
@@ -75,7 +77,7 @@ public class MySql {
         try {
 
             String Query = "select id_alumno, nombre, apellidos, telefono, direccion,sexo,  dni from janillo.al_alumnos where "
-                    + "id_alumno like '%" + ID + "%'";
+                    + "id_alumno like \"%" + ID + "%\"";
 
             Statement st = (Statement) conexion.createStatement();
             rs = st.executeQuery(Query);
@@ -172,5 +174,26 @@ public class MySql {
             JOptionPane.showMessageDialog(null, "Error en el almacenamiento de datos" + ex);
         }
 
+    }
+    public static void eliminarAlumno(int idAlumno){
+    
+        try {
+            Statement st = (com.mysql.jdbc.Statement) bbdd.MySql.conexion.createStatement();
+            //PRIMERO DEBEMOS ELIMINAR LOS REGISTROS
+            //DE LA TABLA DE MATERIAS CONCERNIENTE AL ALUMNO
+            String Query1 = "delete from janillo.al_materias where "
+                    +"id_alumno=\""+idAlumno+"\"";
+            st = (Statement) conexion.createStatement();
+            st.executeUpdate(Query1);
+            //LUEGO BORRAMOS AL ALUMNO
+            String Query2 = "delete from janillo.al_alumnos where "
+                    +"id_alumno=\""+idAlumno+"\"";
+            st = (Statement) conexion.createStatement();
+            st.executeUpdate(Query2);
+            JOptionPane.showMessageDialog(null, "Datos eliminados de forma exitosa");
+        } catch (SQLException ex) {
+            Logger.getLogger(MySql.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    
     }
 }
