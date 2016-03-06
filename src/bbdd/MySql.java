@@ -3,6 +3,7 @@ package bbdd;
 import com.mysql.jdbc.Connection;
 import com.mysql.jdbc.Statement;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.logging.Level;
@@ -17,7 +18,7 @@ public class MySql {
 
     public static Connection conexion;
     private static int id;
-    private static int idBis;
+    private static String idBis;
 
     //Método para abrir la conexión con la base de datos
     //Debe ser static parapoder invocarla
@@ -49,15 +50,17 @@ public class MySql {
         try {
             Statement st1 = (com.mysql.jdbc.Statement) bbdd.MySql.conexion.createStatement();
 
-            ResultSet rs = st1.executeQuery("select count(id_alumno) from janillo.al_alumnos");
+            ResultSet rs = st1.executeQuery("select CAST(id_alumno AS UNSIGNED) FROM janillo.al_alumnos ORDER BY id_alumno DESC LIMIT 1");
             while (rs.next()) {
                 id = rs.getInt(1) + 1;
+                idBis = String.valueOf(id);
             }
+            
             //NOS INTERESA QUE EN LA BASE DE DATOS
             //TODO SE GUARDE EN MAYÚSCULAS
             //DE AHÍ LA FUNCIÓN UPPER
             String Query = "INSERT INTO janillo.al_alumnos(id_alumno, nombre, apellidos, telefono, direccion,sexo, dni) VALUES("
-                    + "upper(\"" + id + "\"), "
+                    + "upper(\"" + idBis + "\"), "
                     + "upper(\"" + nombre + "\"), "
                     + "upper(\"" + apellidos + "\"), "
                     + "upper(\"" + telefono + "\"), "
@@ -72,12 +75,12 @@ public class MySql {
         }
     }
 
-    public static ResultSet consultar(int ID) {
+    public static ResultSet consultar(String ID) {
         ResultSet rs = null;
         try {
 
             String Query = "select id_alumno, nombre, apellidos, telefono, direccion,sexo,  dni from janillo.al_alumnos where "
-                    + "id_alumno like \"%" + ID + "%\"";
+                    + "id_alumno =\"" + ID + "\"";
 
             Statement st = (Statement) conexion.createStatement();
             rs = st.executeQuery(Query);
@@ -122,9 +125,9 @@ public class MySql {
         return rs;
     }
 
-    public static void anhadirNotas(int id_alumno, String nombre_curso, String nombre_materia, float nota_teorica, float nota_practica, float nota_trabajos, float nota_final) {
+    public static void anhadirNotas(String id_alumno, String nombre_curso, String nombre_materia, float nota_teorica, float nota_practica, float nota_trabajos, float nota_final) {
 
-        int id2 = id_alumno;
+        String id2 = id_alumno;
         float nTra = nota_trabajos;
         float nPra = nota_practica;
         float nTeo = nota_teorica;
@@ -175,22 +178,45 @@ public class MySql {
         }
 
     }
-    public static void eliminarAlumno(int idAlumno){
-    
+    public static void eliminarAlumno(String idAlumno){
+    PreparedStatement ps = null;
         try {
-            Statement st = (com.mysql.jdbc.Statement) bbdd.MySql.conexion.createStatement();
+//            Statement st = (com.mysql.jdbc.Statement) bbdd.MySql.conexion.createStatement();
             //PRIMERO DEBEMOS ELIMINAR LOS REGISTROS
             //DE LA TABLA DE MATERIAS CONCERNIENTE AL ALUMNO
             String Query1 = "delete from janillo.al_materias where "
                     +"id_alumno=\""+idAlumno+"\"";
-            st = (Statement) conexion.createStatement();
+            Statement st = (Statement) conexion.createStatement();
             st.executeUpdate(Query1);
+            JOptionPane.showMessageDialog(null, "Datos eliminados de forma exitosa");
             //LUEGO BORRAMOS AL ALUMNO
             String Query2 = "delete from janillo.al_alumnos where "
                     +"id_alumno=\""+idAlumno+"\"";
             st = (Statement) conexion.createStatement();
             st.executeUpdate(Query2);
+          
             JOptionPane.showMessageDialog(null, "Datos eliminados de forma exitosa");
+        } catch (SQLException ex) {
+            Logger.getLogger(MySql.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    
+    }
+    
+    public static void modificarAlumno(String idAlumno,String nombre,String apellidos, String telefono, String direccion, String sexo, String dni){
+    
+        try {
+
+            String Query1 = "update janillo.al_alumnos set "
+                    +"nombre=\""+nombre+"\", "
+                    +"apellidos=\""+apellidos+"\", "
+                    +"telefono=\""+telefono+"\", "
+                    +"direccion=\""+direccion+"\", "
+                    +"sexo=\""+sexo+"\", "
+                    +"dni=\""+dni+"\" where "
+                    +"id_alumno=\""+idAlumno+"\"";
+            Statement st = (Statement) conexion.createStatement();
+            st.executeUpdate(Query1);
+            JOptionPane.showMessageDialog(null, "Datos actualizados de forma exitosa");
         } catch (SQLException ex) {
             Logger.getLogger(MySql.class.getName()).log(Level.SEVERE, null, ex);
         }

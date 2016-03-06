@@ -5,24 +5,14 @@
  */
 package proyecto2;
 
-import java.awt.Color;
-import java.awt.Component;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListModel;
-import javax.swing.JList;
 import javax.swing.JOptionPane;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
-import javax.swing.table.TableModel;
 
 /**
  *
@@ -110,10 +100,13 @@ public class MenuAplicacion extends javax.swing.JFrame {
         tablaListaAlumnos.setModel(modelo);
 
         String[] datos = new String[9];
-        
+
         try {
             com.mysql.jdbc.Statement st = (com.mysql.jdbc.Statement) bbdd.MySql.conexion.createStatement();
-            ResultSet rs = st.executeQuery("select aa.id_alumno, aa.nombre, aa.apellidos, al.codigo_curso,al.codigo_materia, al.nota_trabajos,al.nota_teorica,al.nota_practica,al.nota_final from al_alumnos aa, al_materias al where aa.id_alumno=al.id_alumno order by aa.id_alumno");
+            ResultSet rs = st.executeQuery("select aa.id_alumno, aa.nombre, aa.apellidos,"
+                    + " al.codigo_curso,al.codigo_materia,"
+                    + " al.nota_trabajos,al.nota_teorica,al.nota_practica,al.nota_final"
+                    + " from al_alumnos aa left join  al_materias al on aa.id_alumno=al.id_alumno order by aa.id_alumno");
             while (rs.next()) {
                 datos[0] = rs.getString(1);
                 datos[1] = rs.getString(2);
@@ -157,6 +150,7 @@ public class MenuAplicacion extends javax.swing.JFrame {
         tablaListaAlumnos = new javax.swing.JTable();
         buttonActualizar = new javax.swing.JButton();
         jLabel18 = new javax.swing.JLabel();
+        jButton1 = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
@@ -178,6 +172,7 @@ public class MenuAplicacion extends javax.swing.JFrame {
         fieldSexo = new javax.swing.JTextField();
         jSeparator2 = new javax.swing.JSeparator();
         buttonConsultar = new javax.swing.JButton();
+        buttonModificar = new javax.swing.JButton();
         jPanel3 = new javax.swing.JPanel();
         jLabel8 = new javax.swing.JLabel();
         jLabel9 = new javax.swing.JLabel();
@@ -231,6 +226,8 @@ public class MenuAplicacion extends javax.swing.JFrame {
         jLabel18.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
         jLabel18.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
 
+        jButton1.setText("jButton1");
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -246,7 +243,9 @@ public class MenuAplicacion extends javax.swing.JFrame {
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addGap(0, 0, Short.MAX_VALUE)
+                .addGap(117, 117, 117)
+                .addComponent(jButton1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(buttonActualizar, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(305, 305, 305))
         );
@@ -258,7 +257,9 @@ public class MenuAplicacion extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 327, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
-                .addComponent(buttonActualizar, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(buttonActualizar, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButton1))
                 .addGap(0, 12, Short.MAX_VALUE))
         );
 
@@ -308,6 +309,13 @@ public class MenuAplicacion extends javax.swing.JFrame {
             }
         });
 
+        buttonModificar.setText("Modificar");
+        buttonModificar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonModificarActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -346,21 +354,23 @@ public class MenuAplicacion extends javax.swing.JFrame {
                                     .addComponent(fieldDireccion)
                                     .addComponent(fieldSexo, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)))))
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel2Layout.createSequentialGroup()
-                        .addGap(48, 48, 48)
+                        .addGap(31, 31, 31)
                         .addComponent(buttonLimpiar, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(67, 67, 67)
-                        .addComponent(buttonAnhadir, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(36, 36, 36)
+                        .addComponent(buttonConsultar, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(buttonCargarFoto, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(82, 82, 82))
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addGap(80, 80, 80)
-                        .addComponent(buttonConsultar, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(80, 80, 80)
+                        .addGap(14, 14, 14)
+                        .addComponent(buttonAnhadir, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(56, 56, 56)
+                        .addComponent(buttonModificar, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(buttonEliminar, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                        .addGap(51, 51, 51))))
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 688, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -410,7 +420,8 @@ public class MenuAplicacion extends javax.swing.JFrame {
                     .addComponent(buttonLimpiar, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(buttonAnhadir, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(buttonEliminar, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(buttonConsultar, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(buttonConsultar, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(buttonModificar, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(44, Short.MAX_VALUE))
         );
 
@@ -632,7 +643,7 @@ public class MenuAplicacion extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(null, "No has introducido un ID para la consulta");
         } else {
             try {
-                ResultSet rs = bbdd.MySql.consultar(Integer.parseInt(fieldId.getText()));
+                ResultSet rs = bbdd.MySql.consultar(fieldId.getText());
 
                 String[] datos = new String[3];
 
@@ -678,7 +689,7 @@ public class MenuAplicacion extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(null, "No has introducido un ID para la consulta");
         } else {
             try {
-                ResultSet rs = bbdd.MySql.consultar(Integer.parseInt(fieldId.getText()));
+                ResultSet rs = bbdd.MySql.consultar(fieldId.getText());
 
                 String[] datos = new String[7];
 
@@ -721,7 +732,7 @@ public class MenuAplicacion extends javax.swing.JFrame {
         //VARIABLES PARA QUE YO ME ENTERE
         //ADEMÁS NECESITAMOS CONVERTIRLO A LOS
         //TIPOS QUE VA A USAR MYSQL
-        int id_alum = Integer.parseInt(fieldId2.getText());
+        String id_alum = fieldId2.getText();
         String nom_curso = comboCursos.getSelectedItem().toString();
         String nom_materia = comboMateria.getSelectedItem().toString();
         float nota_pra = Float.parseFloat(fieldNotaPrac.getText());
@@ -747,9 +758,14 @@ public class MenuAplicacion extends javax.swing.JFrame {
     }//GEN-LAST:event_buttonCalcMediaActionPerformed
 
     private void buttonEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonEliminarActionPerformed
-        int idAlumno=Integer.parseInt(fieldId2.getText());
+        String idAlumno = fieldId2.getText();
         bbdd.MySql.eliminarAlumno(idAlumno);
     }//GEN-LAST:event_buttonEliminarActionPerformed
+
+    private void buttonModificarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonModificarActionPerformed
+
+
+    }//GEN-LAST:event_buttonModificarActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -763,6 +779,7 @@ public class MenuAplicacion extends javax.swing.JFrame {
     private javax.swing.JButton buttonEliminar;
     private javax.swing.JButton buttonLimpiar;
     private javax.swing.JButton buttonLimpiar2;
+    private javax.swing.JButton buttonModificar;
     private javax.swing.JButton buttonNotasBase;
     private javax.swing.JComboBox<String> comboAnho;
     private javax.swing.JComboBox<String> comboCursos;
@@ -781,6 +798,7 @@ public class MenuAplicacion extends javax.swing.JFrame {
     private javax.swing.JTextField fieldNotaTra;
     private javax.swing.JTextField fieldSexo;
     private javax.swing.JTextField fieldTelefono;
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
