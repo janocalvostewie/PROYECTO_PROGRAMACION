@@ -50,9 +50,12 @@ public class MySql {
         try {
             Statement st1 = (com.mysql.jdbc.Statement) bbdd.MySql.conexion.createStatement();
 
+            //SACAMOS EL ÚLTIMO ID DE LA BASE DE DATOS
+            //PUESTO QUE ES TIPO VARCHAR NECESITAMOS PASARLO A INTEGER PARA PODER OPERAR
             ResultSet rs = st1.executeQuery("select CAST(id_alumno AS UNSIGNED) FROM janillo.al_alumnos ORDER BY id_alumno DESC LIMIT 1");
             while (rs.next()) {
                 id = rs.getInt(1) + 1;
+                //NOS DEVUELVE UN NUEVO ID PASADO A STRING
                 idBis = String.valueOf(id);
             }
             
@@ -95,7 +98,8 @@ public class MySql {
     public static ResultSet listarCursos() {
         ResultSet rs = null;
         try {
-
+            //EL CODIGO ES LA PK PERO QUEREMOS MOSTRAR EL NOMBRE
+            //LA PK LA NECESITAREMOS YA QUE SERÁ PARTE DE LA PK DE LA TABLA 'AL_MATERIAS'
             String Query = "select codigo_curso, nombre_curso from janillo.for_cursos";
 
             Statement st = (Statement) conexion.createStatement();
@@ -126,7 +130,8 @@ public class MySql {
     }
 
     public static void anhadirNotas(String id_alumno, String nombre_curso, String nombre_materia, float nota_teorica, float nota_practica, float nota_trabajos, float nota_final) {
-
+        //ESTO LO PUSE PARA ACLARARME YO, CON EL NOMBRE DE LOS PARAMETROS LLEGARÍA
+        //ME RESULTABA MÁS VISUAL TENERLOS AQUÍ
         String id2 = id_alumno;
         float nTra = nota_trabajos;
         float nPra = nota_practica;
@@ -181,9 +186,9 @@ public class MySql {
     public static void eliminarAlumno(String idAlumno){
     PreparedStatement ps = null;
         try {
-//            Statement st = (com.mysql.jdbc.Statement) bbdd.MySql.conexion.createStatement();
             //PRIMERO DEBEMOS ELIMINAR LOS REGISTROS
             //DE LA TABLA DE MATERIAS CONCERNIENTE AL ALUMNO
+            //YA QUE POSEE UNA FOREIGN KEY  SINO NO PODRÍAMOS ELIMINAR AL ALUMNO
             String Query1 = "delete from janillo.al_materias where "
                     +"id_alumno=\""+idAlumno+"\"";
             Statement st = (Statement) conexion.createStatement();
@@ -207,12 +212,12 @@ public class MySql {
         try {
 
             String Query1 = "update janillo.al_alumnos set "
-                    +"nombre=\""+nombre+"\", "
-                    +"apellidos=\""+apellidos+"\", "
-                    +"telefono=\""+telefono+"\", "
-                    +"direccion=\""+direccion+"\", "
-                    +"sexo=\""+sexo+"\", "
-                    +"dni=\""+dni+"\" where "
+                    +"nombre=upper(\""+nombre+"\"), "
+                    +"apellidos=upper(\""+apellidos+"\"), "
+                    +"telefono=upper(\""+telefono+"\"), "
+                    +"direccion=upper(\""+direccion+"\"), "
+                    +"sexo=upper(\""+sexo+"\"), "
+                    +"dni=upper(\""+dni+"\") where "
                     +"id_alumno=\""+idAlumno+"\"";
             Statement st = (Statement) conexion.createStatement();
             st.executeUpdate(Query1);

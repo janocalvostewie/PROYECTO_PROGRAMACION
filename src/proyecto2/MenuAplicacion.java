@@ -5,11 +5,17 @@
  */
 package proyecto2;
 
+import java.awt.Image;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
@@ -27,6 +33,7 @@ public class MenuAplicacion extends javax.swing.JFrame {
      */
     public MenuAplicacion() {
         initComponents();
+        vaciar();
         scrollCursos();
         scrollMaterias();
     }
@@ -51,16 +58,23 @@ public class MenuAplicacion extends javax.swing.JFrame {
 
     public void scrollMaterias() {
 
+        //CAPTURAMOS EL VALOR DEL DESPLEGABLE
+        //EN LOS DOS PRIMEROS COMBOBOX
         String vnomCurso = comboCursos.getSelectedItem().toString();
         String vAnho = comboAnho.getSelectedItem().toString();
 
+        //LOS PASAMOS COMO PARÁMETROS DE LA CONSULTA
         ResultSet rs = bbdd.MySql.listarMaterias(vnomCurso, vAnho);
         DefaultComboBoxModel modelo = new DefaultComboBoxModel();
 
+        //COMO ELEMENTO POR DEFECTO PONEMOS ALGO QUE NO DE 
+        //RESULTADO EN EL QUERY
         modelo.addElement("------");
         try {
+            //NOS DEVUELVE LOS CAMPOS DE LA BBD
             while (rs.next()) {
                 String stringTemporal = (rs.getString(2));
+                //LO AÑADIMOS AL COMBOBOX
                 modelo.addElement(stringTemporal);
             }
             comboMateria.setModel(modelo);
@@ -85,9 +99,60 @@ public class MenuAplicacion extends javax.swing.JFrame {
 
     }
 
+    public void consultarAlum() {
+
+        //COMPROBAMOS QUE LOS CAMPOS DE BÚSQUEDA ESTÉN A NULL
+        //PUESTO QUE HAY DOS CAMPOS DE ID SI UNO ESTA A NULL
+        // IGUALAMOS UNA VARIABLE AUXILIAR CON EL VALOR DE LA OTRA
+        //Y VICEVERSA
+        String IDAL = "";
+        if (fieldId.getText() == null || fieldId.getText().equalsIgnoreCase("")) {
+            IDAL = fieldId2.getText();
+        } else if (fieldId2.getText() == null || fieldId2.getText().equalsIgnoreCase("")) {
+            IDAL = fieldId.getText();
+        } else if ((fieldId.getText() == null || fieldId.getText().equalsIgnoreCase("") && (fieldId2.getText() == null) || fieldId2.getText().equalsIgnoreCase(""))) {
+            JOptionPane.showMessageDialog(null, "No has introducido un ID de búsqueda");
+        }
+        //CON EL VALOR ID EN LA VARIABLE LO PASAMOS COMO PARAMETRO PARA LA CONSULTA
+        try {
+
+            ResultSet rs = bbdd.MySql.consultar(IDAL);
+
+            String[] datos = new String[7];
+            //RELLENAMOS TODOS LOS CAMPOS DE LA APLICACION
+            //CON LOS DATOS OBTENIDOS DE LA QUERY
+            while (rs.next()) {
+                datos[0] = rs.getString(1);
+                fieldId2.setText(datos[0]);
+                fieldId.setText(datos[0]);
+                datos[1] = rs.getString(2);
+                fieldNombre.setText(datos[1]);
+                fieldNombre2.setText(datos[1]);
+                datos[2] = rs.getString(3);
+                fieldApellidos.setText(datos[2]);
+                fieldApellidos2.setText(datos[2]);
+                datos[3] = rs.getString(4);
+                fieldTelefono.setText(datos[3]);
+                datos[4] = rs.getString(5);
+                fieldDireccion.setText(datos[4]);
+                datos[5] = rs.getString(6);
+                fieldSexo.setText(datos[5]);
+                datos[6] = rs.getString(7);
+                fieldDni.setText(datos[6]);
+
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(MenuAplicacion.class
+                    .getName()).log(Level.SEVERE, null, ex);
+        }
+
+    }
+
     public void tabla() {
 
+        //CREAMOS USANDO UNA PREDETERMINADA UN MODELO PARA LA JTABLE
         DefaultTableModel modelo = new DefaultTableModel();
+        //AÑADIMOS LA CABECERA DE LA TABLA
         modelo.addColumn("ID");
         modelo.addColumn("Nombre");
         modelo.addColumn("Apellidos");
@@ -97,8 +162,11 @@ public class MenuAplicacion extends javax.swing.JFrame {
         modelo.addColumn("Nota Teórica");
         modelo.addColumn("Nota Práctica");
         modelo.addColumn("Nota Final");
+        //APLICAMOS EL MODELO A LA JTABLE QUE TENEMOS EN EL JFRAME
         tablaListaAlumnos.setModel(modelo);
 
+        //CREAMOS UN ARRAY PARA INTRODUCIR LOS DATOS QUE NOS DEVUELVA LA QUERY
+        //ESTE ARRAY SERÁ LA FUTURA LÍNEA (ROW) DE LA TABLA
         String[] datos = new String[9];
 
         try {
@@ -107,7 +175,10 @@ public class MenuAplicacion extends javax.swing.JFrame {
                     + " al.codigo_curso,al.codigo_materia,"
                     + " al.nota_trabajos,al.nota_teorica,al.nota_practica,al.nota_final"
                     + " from al_alumnos aa left join  al_materias al on aa.id_alumno=al.id_alumno order by aa.id_alumno");
+            //POR CADA LÍNEA DEVUELTA DE LA QUERY LA INTRODUCIRÁ EN EL ARRAY
+            //CREAMOS UN BUCLE
             while (rs.next()) {
+                //IGUALAMOS CADA CAMPO DE LA QUERY A CADA UNA DE LAS POSICIONES DEL ARRAY
                 datos[0] = rs.getString(1);
                 datos[1] = rs.getString(2);
                 datos[2] = rs.getString(3);
@@ -117,20 +188,16 @@ public class MenuAplicacion extends javax.swing.JFrame {
                 datos[6] = String.valueOf(rs.getFloat(7));
                 datos[7] = String.valueOf(rs.getFloat(8));
                 datos[8] = String.valueOf(rs.getFloat(9));
-
+                //AÑADIMOS LA LÍNEA A LA TABLA
                 modelo.addRow(datos);
             }
-
+            //PUESTO QUE EL CAMPO ID ES MUY PEQUEÑO NO NECESITAMOS UNA COLUMNA MUY ANCHA
+            //MODIFICAMOS EL ANCHO DE LA MISMA
             TableColumn columna1 = tablaListaAlumnos.getColumnModel().getColumn(0);
-            TableColumn columna6 = tablaListaAlumnos.getColumnModel().getColumn(5);
-            TableColumn columna7 = tablaListaAlumnos.getColumnModel().getColumn(6);
-            TableColumn columna8 = tablaListaAlumnos.getColumnModel().getColumn(7);
-            TableColumn columna9 = tablaListaAlumnos.getColumnModel().getColumn(8);
-
             columna1.setPreferredWidth(35);
             columna1.setMaxWidth(35);
             columna1.setMinWidth(35);
-
+            //VOLVEMOS A APLICAR EL MODELO PARA QUE SE APLIQUEN LOS CAMBIOS CON LAS NUEVAS LÍNEAS
             tablaListaAlumnos.setModel(modelo);
 
         } catch (SQLException ex) {
@@ -150,7 +217,7 @@ public class MenuAplicacion extends javax.swing.JFrame {
         tablaListaAlumnos = new javax.swing.JTable();
         buttonActualizar = new javax.swing.JButton();
         jLabel18 = new javax.swing.JLabel();
-        jButton1 = new javax.swing.JButton();
+        buttonExportar = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
@@ -173,6 +240,7 @@ public class MenuAplicacion extends javax.swing.JFrame {
         jSeparator2 = new javax.swing.JSeparator();
         buttonConsultar = new javax.swing.JButton();
         buttonModificar = new javax.swing.JButton();
+        lblFoto = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
         jLabel8 = new javax.swing.JLabel();
         jLabel9 = new javax.swing.JLabel();
@@ -180,8 +248,7 @@ public class MenuAplicacion extends javax.swing.JFrame {
         jSeparator1 = new javax.swing.JSeparator();
         jLabel11 = new javax.swing.JLabel();
         jLabel12 = new javax.swing.JLabel();
-        buttonConsultar2 = new javax.swing.JButton();
-        buttonLimpiar2 = new javax.swing.JButton();
+        buttonConsultaDatAca = new javax.swing.JButton();
         fieldId2 = new javax.swing.JTextField();
         fieldNombre2 = new javax.swing.JTextField();
         fieldApellidos2 = new javax.swing.JTextField();
@@ -201,6 +268,7 @@ public class MenuAplicacion extends javax.swing.JFrame {
         jLabel17 = new javax.swing.JLabel();
         fieldNotaFinal = new javax.swing.JTextField();
         buttonNotasBase = new javax.swing.JButton();
+        buttonLimpiar3 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -226,7 +294,12 @@ public class MenuAplicacion extends javax.swing.JFrame {
         jLabel18.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
         jLabel18.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
 
-        jButton1.setText("jButton1");
+        buttonExportar.setText("Exportar");
+        buttonExportar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonExportarActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -243,11 +316,11 @@ public class MenuAplicacion extends javax.swing.JFrame {
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addGap(117, 117, 117)
-                .addComponent(jButton1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(117, 315, Short.MAX_VALUE)
                 .addComponent(buttonActualizar, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(305, 305, 305))
+                .addGap(180, 180, 180)
+                .addComponent(buttonExportar)
+                .addGap(52, 52, 52))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -259,7 +332,7 @@ public class MenuAplicacion extends javax.swing.JFrame {
                 .addGap(18, 18, 18)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(buttonActualizar, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButton1))
+                    .addComponent(buttonExportar))
                 .addGap(0, 12, Short.MAX_VALUE))
         );
 
@@ -280,6 +353,11 @@ public class MenuAplicacion extends javax.swing.JFrame {
         jLabel7.setText("Sexo:");
 
         buttonCargarFoto.setText("Cargar Foto");
+        buttonCargarFoto.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonCargarFotoActionPerformed(evt);
+            }
+        });
 
         buttonLimpiar.setText("Limpiar");
         buttonLimpiar.addActionListener(new java.awt.event.ActionListener() {
@@ -315,6 +393,10 @@ public class MenuAplicacion extends javax.swing.JFrame {
                 buttonModificarActionPerformed(evt);
             }
         });
+
+        lblFoto.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        lblFoto.setText("Foto");
+        lblFoto.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -360,17 +442,19 @@ public class MenuAplicacion extends javax.swing.JFrame {
                         .addComponent(buttonConsultar, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(buttonCargarFoto, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(82, 82, 82))
-                    .addGroup(jPanel2Layout.createSequentialGroup()
                         .addGap(14, 14, 14)
                         .addComponent(buttonAnhadir, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(56, 56, 56)
                         .addComponent(buttonModificar, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGap(38, 38, 38)
                         .addComponent(buttonEliminar, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(51, 51, 51))))
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(buttonCargarFoto, javax.swing.GroupLayout.DEFAULT_SIZE, 172, Short.MAX_VALUE)
+                            .addComponent(lblFoto, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(82, 82, 82))))
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 688, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -379,26 +463,31 @@ public class MenuAplicacion extends javax.swing.JFrame {
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
-                .addGap(19, 19, 19)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel1)
-                    .addComponent(fieldId, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel2)
-                    .addComponent(fieldNombre, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel3)
-                    .addComponent(fieldApellidos, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel4)
-                    .addComponent(fieldDni, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel5)
-                    .addComponent(fieldTelefono, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGap(19, 19, 19)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel1)
+                            .addComponent(fieldId, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(23, 23, 23)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel2)
+                            .addComponent(fieldNombre, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(18, 18, 18)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel3)
+                            .addComponent(fieldApellidos, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(18, 18, 18)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel4)
+                            .addComponent(fieldDni, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(18, 18, 18)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel5)
+                            .addComponent(fieldTelefono, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                        .addGap(30, 30, 30)
+                        .addComponent(lblFoto, javax.swing.GroupLayout.PREFERRED_SIZE, 166, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addGap(24, 24, 24)
@@ -422,7 +511,7 @@ public class MenuAplicacion extends javax.swing.JFrame {
                     .addComponent(buttonEliminar, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(buttonConsultar, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(buttonModificar, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(44, Short.MAX_VALUE))
+                .addContainerGap(39, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Datos Personales", jPanel2);
@@ -437,17 +526,10 @@ public class MenuAplicacion extends javax.swing.JFrame {
 
         jLabel12.setText("Materias:");
 
-        buttonConsultar2.setText("Consultar");
-        buttonConsultar2.addActionListener(new java.awt.event.ActionListener() {
+        buttonConsultaDatAca.setText("Consultar");
+        buttonConsultaDatAca.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                buttonConsultar2ActionPerformed(evt);
-            }
-        });
-
-        buttonLimpiar2.setText("Limpiar");
-        buttonLimpiar2.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                buttonLimpiar2ActionPerformed(evt);
+                buttonConsultaDatAcaActionPerformed(evt);
             }
         });
 
@@ -490,6 +572,13 @@ public class MenuAplicacion extends javax.swing.JFrame {
             }
         });
 
+        buttonLimpiar3.setText("Limpiar");
+        buttonLimpiar3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonLimpiar3ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
@@ -519,11 +608,6 @@ public class MenuAplicacion extends javax.swing.JFrame {
                             .addGroup(jPanel3Layout.createSequentialGroup()
                                 .addContainerGap()
                                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 687, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(jPanel3Layout.createSequentialGroup()
-                                .addGap(146, 146, 146)
-                                .addComponent(buttonLimpiar2, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(185, 185, 185)
-                                .addComponent(buttonConsultar2, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(jPanel3Layout.createSequentialGroup()
                                 .addGap(270, 270, 270)
                                 .addComponent(buttonCalcMaterias, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -568,6 +652,12 @@ public class MenuAplicacion extends javax.swing.JFrame {
                                 .addComponent(buttonNotasBase, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)))
                         .addGap(0, 22, Short.MAX_VALUE)))
                 .addContainerGap())
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
+                .addGap(127, 127, 127)
+                .addComponent(buttonLimpiar3, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(buttonConsultaDatAca, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(211, 211, 211))
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -583,10 +673,12 @@ public class MenuAplicacion extends javax.swing.JFrame {
                     .addComponent(fieldNombre2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(fieldApellidos2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(buttonConsultar2, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(buttonLimpiar2, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(13, 13, 13)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(buttonLimpiar3, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addGap(2, 2, 2)
+                        .addComponent(buttonConsultaDatAca, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(10, 10, 10)
                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -618,7 +710,7 @@ public class MenuAplicacion extends javax.swing.JFrame {
                             .addComponent(fieldNotaFinal, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addComponent(jLabel17)
                     .addComponent(buttonNotasBase, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(47, Short.MAX_VALUE))
+                .addContainerGap(45, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Datos Académicos", jPanel3);
@@ -637,36 +729,8 @@ public class MenuAplicacion extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void buttonConsultar2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonConsultar2ActionPerformed
-
-        if (vacio.compareTo(fieldId2.getText()) == 0) {
-            JOptionPane.showMessageDialog(null, "No has introducido un ID para la consulta");
-        } else {
-            try {
-                ResultSet rs = bbdd.MySql.consultar(fieldId.getText());
-
-                String[] datos = new String[3];
-
-                while (rs.next()) {
-                    datos[0] = rs.getString(1);
-                    fieldId2.setText(datos[0]);
-                    datos[1] = rs.getString(2);
-                    fieldNombre2.setText(datos[1]);
-                    datos[2] = rs.getString(3);
-                    fieldApellidos2.setText(datos[2]);
-
-                }
-            } catch (SQLException ex) {
-                JOptionPane.showMessageDialog(null, "Esto estalla" + ex);
-                Logger.getLogger(MenuAplicacion.class
-                        .getName()).log(Level.SEVERE, null, ex);
-            }
-
-        }
-
-    }//GEN-LAST:event_buttonConsultar2ActionPerformed
-
     private void buttonAnhadirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonAnhadirActionPerformed
+        //INVOCAMOS EL MÉTODO DE INSERCIÓN DE DATOS DEL PAQUETE BBDD
         bbdd.MySql.meterDatos(fieldNombre.getText(), fieldApellidos.getText(), fieldTelefono.getText(), fieldDireccion.getText(), fieldSexo.getText(), fieldDni.getText());
     }//GEN-LAST:event_buttonAnhadirActionPerformed
 
@@ -678,44 +742,13 @@ public class MenuAplicacion extends javax.swing.JFrame {
         vaciar();
     }//GEN-LAST:event_buttonLimpiarActionPerformed
 
-    private void buttonLimpiar2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonLimpiar2ActionPerformed
-        vaciar();
+    private void buttonConsultaDatAcaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonConsultaDatAcaActionPerformed
+        consultarAlum();
 
-    }//GEN-LAST:event_buttonLimpiar2ActionPerformed
+    }//GEN-LAST:event_buttonConsultaDatAcaActionPerformed
 
     private void buttonConsultarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonConsultarActionPerformed
-
-        if (vacio.compareTo(fieldId.getText()) == 0) {
-            JOptionPane.showMessageDialog(null, "No has introducido un ID para la consulta");
-        } else {
-            try {
-                ResultSet rs = bbdd.MySql.consultar(fieldId.getText());
-
-                String[] datos = new String[7];
-
-                while (rs.next()) {
-                    datos[0] = rs.getString(1);
-                    fieldId.setText(datos[0]);
-                    datos[1] = rs.getString(2);
-                    fieldNombre.setText(datos[1]);
-                    datos[2] = rs.getString(3);
-                    fieldApellidos.setText(datos[2]);
-                    datos[3] = rs.getString(4);
-                    fieldTelefono.setText(datos[3]);
-                    datos[4] = rs.getString(5);
-                    fieldDireccion.setText(datos[4]);
-                    datos[5] = rs.getString(6);
-                    fieldSexo.setText(datos[5]);
-                    datos[6] = rs.getString(7);
-                    fieldDni.setText(datos[6]);
-
-                }
-            } catch (SQLException ex) {
-                Logger.getLogger(MenuAplicacion.class
-                        .getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-
+        consultarAlum();
 
     }//GEN-LAST:event_buttonConsultarActionPerformed
 
@@ -763,9 +796,78 @@ public class MenuAplicacion extends javax.swing.JFrame {
     }//GEN-LAST:event_buttonEliminarActionPerformed
 
     private void buttonModificarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonModificarActionPerformed
+        //ESTABLECEMOS LAS VARIABLES QUE PASAREMOS POR PARÁMETRO
+        String apellidos = fieldApellidos.getText();
+        String dni = fieldDni.getText();
+        String direccion = fieldDireccion.getText();
+        String id = fieldId.getText();
+        String nombre = fieldNombre.getText();
+        String telefono = fieldTelefono.getText();
+        String sexo = fieldSexo.getText();
 
+        //INVOCAMOS AL MÉTODO DE MODIFICACION
+        bbdd.MySql.modificarAlumno(id, nombre, apellidos, telefono, direccion, sexo, dni);
 
     }//GEN-LAST:event_buttonModificarActionPerformed
+
+    private void buttonLimpiar3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonLimpiar3ActionPerformed
+        vaciar();
+    }//GEN-LAST:event_buttonLimpiar3ActionPerformed
+
+    //PARA PODER CARGAR LA FOTO NECESITAOS UNA VARIABLE FILE
+    File fotillo;
+
+    private void buttonCargarFotoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonCargarFotoActionPerformed
+
+        int resultado;
+
+
+        resultado = CargarFoto.jfchCargarfoto.showOpenDialog(null);
+            fotillo = CargarFoto.jfchCargarfoto.getSelectedFile();
+            try {
+                ImageIcon icon = new ImageIcon(fotillo.toString());
+                Icon icono = new ImageIcon(icon.getImage().getScaledInstance(lblFoto.getWidth(), lblFoto.getHeight(), Image.SCALE_DEFAULT));
+                lblFoto.setText(null);
+                lblFoto.setIcon(icono);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(null, "Error abriendo la imagen " + ex);
+            }
+
+    }//GEN-LAST:event_buttonCargarFotoActionPerformed
+
+    private void buttonExportarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonExportarActionPerformed
+       //VERIFIQUEMOS QUE HAY DATOS EN LA TABLA
+         if (this.tablaListaAlumnos.getRowCount()==0) {
+            JOptionPane.showMessageDialog (null, "No hay datos en la tabla para exportar.","BCO",
+                JOptionPane.INFORMATION_MESSAGE);
+        }
+         else{JOptionPane.showMessageDialog(null, "Hay datos");}
+      
+    String archivo = "C:\\Users\\Jano\\Desktop\\listado.txt";
+        File salidaTXT = new File(archivo);
+        PrintWriter ps = null;
+        try {
+            ps = new PrintWriter(archivo);
+            
+           int numFilas=tablaListaAlumnos.getRowCount();
+           int numColumn=tablaListaAlumnos.getColumnCount();
+           
+           for(int i=0;i<numFilas;i++ ){
+               for (int j=0;j<numColumn;j++){
+                   
+            ps.print(tablaListaAlumnos.getModel().getValueAt(i, j)+", ");
+            
+           }
+               ps.println("\n");
+           }
+            System.out.println("Se ha generado un fichero");
+            ps.close();
+        } catch (FileNotFoundException e) {
+            System.out.println("No se ha encontrado el archivo " + archivo);
+        }
+       
+        
+    }//GEN-LAST:event_buttonExportarActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -774,11 +876,12 @@ public class MenuAplicacion extends javax.swing.JFrame {
     private javax.swing.JButton buttonCalcMaterias;
     private javax.swing.JButton buttonCalcMedia;
     private javax.swing.JButton buttonCargarFoto;
+    private javax.swing.JButton buttonConsultaDatAca;
     private javax.swing.JButton buttonConsultar;
-    private javax.swing.JButton buttonConsultar2;
     private javax.swing.JButton buttonEliminar;
+    private javax.swing.JButton buttonExportar;
     private javax.swing.JButton buttonLimpiar;
-    private javax.swing.JButton buttonLimpiar2;
+    private javax.swing.JButton buttonLimpiar3;
     private javax.swing.JButton buttonModificar;
     private javax.swing.JButton buttonNotasBase;
     private javax.swing.JComboBox<String> comboAnho;
@@ -798,7 +901,6 @@ public class MenuAplicacion extends javax.swing.JFrame {
     private javax.swing.JTextField fieldNotaTra;
     private javax.swing.JTextField fieldSexo;
     private javax.swing.JTextField fieldTelefono;
-    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
@@ -825,6 +927,7 @@ public class MenuAplicacion extends javax.swing.JFrame {
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
     private javax.swing.JTabbedPane jTabbedPane1;
+    private javax.swing.JLabel lblFoto;
     private javax.swing.JTable tablaListaAlumnos;
     // End of variables declaration//GEN-END:variables
 }
