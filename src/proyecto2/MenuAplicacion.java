@@ -820,15 +820,16 @@ public class MenuAplicacion extends javax.swing.JFrame {
     private void buttonCargarFotoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonCargarFotoActionPerformed
 
         int resultado;
+        CargarFoto foto1=new CargarFoto();
 
-
-        resultado = CargarFoto.jfchCargarfoto.showOpenDialog(null);
-            fotillo = CargarFoto.jfchCargarfoto.getSelectedFile();
+        resultado = foto1.jfchCargarfoto.showOpenDialog(null);
+            fotillo = foto1.jfchCargarfoto.getSelectedFile();
             try {
                 ImageIcon icon = new ImageIcon(fotillo.toString());
                 Icon icono = new ImageIcon(icon.getImage().getScaledInstance(lblFoto.getWidth(), lblFoto.getHeight(), Image.SCALE_DEFAULT));
                 lblFoto.setText(null);
                 lblFoto.setIcon(icono);
+                
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(null, "Error abriendo la imagen " + ex);
             }
@@ -836,7 +837,7 @@ public class MenuAplicacion extends javax.swing.JFrame {
     }//GEN-LAST:event_buttonCargarFotoActionPerformed
 
     private void buttonExportarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonExportarActionPerformed
-       //VERIFIQUEMOS QUE HAY DATOS EN LA TABLA
+       //VERIFICAMOS QUE HAY DATOS EN LA TABLA
          if (this.tablaListaAlumnos.getRowCount()==0) {
             JOptionPane.showMessageDialog (null, "No hay datos en la tabla para exportar.","BCO",
                 JOptionPane.INFORMATION_MESSAGE);
