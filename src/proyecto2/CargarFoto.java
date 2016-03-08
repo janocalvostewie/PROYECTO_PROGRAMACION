@@ -1,6 +1,15 @@
 
 package proyecto2;
 
+import java.awt.Graphics2D;
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+
 /**
  *
  * @author Jano
@@ -10,8 +19,61 @@ public class CargarFoto extends javax.swing.JFrame {
     public CargarFoto() {
         initComponents();
     }
-
     
+    public static Image iconToImage(Icon icon) {
+          if (icon instanceof ImageIcon) {
+              return ((ImageIcon)icon).getImage();
+          } else {
+              int w = icon.getIconWidth();
+              int h = icon.getIconHeight();
+              GraphicsEnvironment ge = 
+                GraphicsEnvironment.getLocalGraphicsEnvironment();
+              GraphicsDevice gd = ge.getDefaultScreenDevice();
+              GraphicsConfiguration gc = gd.getDefaultConfiguration();
+              BufferedImage image = gc.createCompatibleImage(w, h);
+              Graphics2D g = image.createGraphics();
+              icon.paintIcon(null, g, 0, 0);
+              g.dispose();
+              return image;
+          }
+      }
+    
+public static BufferedImage getBufferedImage(Image img)
+{
+    if (img instanceof BufferedImage)
+    {
+       return (BufferedImage) img;
+    }
+
+    BufferedImage bimage = new BufferedImage(img.getWidth(null), 
+                    img.getHeight(null), BufferedImage.TYPE_INT_ARGB);
+
+    Graphics2D bGr = bimage.createGraphics();
+    bGr.drawImage(img, 0, 0, null);
+    bGr.dispose();
+
+    // Return the buffered image
+    return bimage;
+}
+   static Image iconToImage2(Icon icon) {
+   if (icon instanceof ImageIcon) {
+      return ((ImageIcon)icon).getImage();
+   } 
+   else {
+      int w = icon.getIconWidth();
+      int h = icon.getIconHeight();
+      GraphicsEnvironment ge = 
+        GraphicsEnvironment.getLocalGraphicsEnvironment();
+      GraphicsDevice gd = ge.getDefaultScreenDevice();
+      GraphicsConfiguration gc = gd.getDefaultConfiguration();
+      BufferedImage image = gc.createCompatibleImage(w, h);
+      Graphics2D g = image.createGraphics();
+      icon.paintIcon(null, g, 0, 0);
+      g.dispose();
+      return image;
+   }
+ } 
+
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {

@@ -2,6 +2,11 @@ package bbdd;
 
 import com.mysql.jdbc.Connection;
 import com.mysql.jdbc.Statement;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -9,6 +14,11 @@ import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
+import JanilloMySql.JanilloMySqlntb;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumn;
+import proyecto2.MenuAplicacion;
+import static proyecto2.MenuAplicacion.tablaListaAlumnos;
 
 /**
  *
@@ -16,49 +26,95 @@ import javax.swing.JOptionPane;
  */
 public class MySql {
 
-    public static Connection conexion;
+    public static JanilloMySqlntb connect = new JanilloMySqlntb();
     private static int id;
     private static String idBis;
 
-    //Método para abrir la conexión con la base de datos
-    //Debe ser static parapoder invocarla
-    public static void conectarse() throws Exception {
-        String db_name = "janillo";
-        String user = "jano";
-        String pass = "Cthulhu+22";
+    public MySql() {
         try {
-            Class.forName("com.mysql.jdbc.Driver");
-            conexion = (Connection) DriverManager.getConnection("jdbc:mysql://localhost:3306/" + db_name, user, pass);
-            JOptionPane.showMessageDialog(null, "Se ha iniciado la conexión con el servidor de forma exitosa");
-        } catch (ClassNotFoundException | SQLException ex) {
+            JanilloMySqlntb.conectarse(JOptionPane.showInputDialog("Introduzca base de datos"), JOptionPane.showInputDialog("Introduzca usuario"), JOptionPane.showInputDialog("Introduzca contraseña"));
+        } catch (Exception ex) {
             Logger.getLogger(MySql.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
-    //Método para cerrar la conexión con la base de datos
-    public static void cerrarConexion() {
+    public static void tabla() {
+
+        //CREAMOS USANDO UNA PREDETERMINADA UN MODELO PARA LA JTABLE
+        DefaultTableModel modelo = new DefaultTableModel();
+        //AÑADIMOS LA CABECERA DE LA TABLA
+        modelo.addColumn("ID");
+        modelo.addColumn("Nombre");
+        modelo.addColumn("Apellidos");
+        modelo.addColumn("Curso");
+        modelo.addColumn("Materia");
+        modelo.addColumn("Docente");
+        modelo.addColumn("Nota Trabajos");
+        modelo.addColumn("Nota Teórica");
+        modelo.addColumn("Nota Práctica");
+        modelo.addColumn("Nota Final");
+        //APLICAMOS EL MODELO A LA JTABLE QUE TENEMOS EN EL JFRAME
+        MenuAplicacion.tablaListaAlumnos.setModel(modelo);
+
+        //CREAMOS UN ARRAY PARA INTRODUCIR LOS DATOS QUE NOS DEVUELVA LA QUERY
+        //ESTE ARRAY SERÁ LA FUTURA LÍNEA (ROW) DE LA TABLA
+        String[] datos = new String[10];
+
         try {
-            conexion.close();
-            JOptionPane.showMessageDialog(null, "Se ha finalizado la conexión con el servidor");
+
+            ResultSet rs = connect.st.executeQuery("select aa.id_alumno, aa.nombre, aa.apellidos,"
+                    + " al.codigo_curso,al.codigo_materia, fm.docente,"
+                    + " al.nota_trabajos,al.nota_teorica,al.nota_practica,al.nota_final"
+                    + " from al_alumnos aa left join  al_materias al on aa.id_alumno=al.id_alumno, for_materias fm"
+                    + " where fm.codigo_materia=al.codigo_materia"
+                    + " order by aa.id_alumno");
+            //POR CADA LÍNEA DEVUELTA DE LA QUERY LA INTRODUCIRÁ EN EL ARRAY
+            //CREAMOS UN BUCLE
+            while (rs.next()) {
+                //IGUALAMOS CADA CAMPO DE LA QUERY A CADA UNA DE LAS POSICIONES DEL ARRAY
+                datos[0] = rs.getString(1);
+                datos[1] = rs.getString(2);
+                datos[2] = rs.getString(3);
+                datos[3] = rs.getString(4);
+                datos[4] = rs.getString(5);
+                datos[5] = rs.getString(6);
+                datos[6] = String.valueOf(rs.getFloat(7));
+                datos[7] = String.valueOf(rs.getFloat(8));
+                datos[8] = String.valueOf(rs.getFloat(9));
+                datos[9] = String.valueOf(rs.getFloat(10));
+                //AÑADIMOS LA LÍNEA A LA TABLA
+                modelo.addRow(datos);
+            }
+            //PUESTO QUE EL CAMPO ID ES MUY PEQUEÑO NO NECESITAMOS UNA COLUMNA MUY ANCHA
+            //MODIFICAMOS EL ANCHO DE LA MISMA
+            TableColumn columna1 = tablaListaAlumnos.getColumnModel().getColumn(0);
+            columna1.setPreferredWidth(35);
+            columna1.setMaxWidth(35);
+            columna1.setMinWidth(35);
+            //VOLVEMOS A APLICAR EL MODELO PARA QUE SE APLIQUEN LOS CAMBIOS CON LAS NUEVAS LÍNEAS
+            tablaListaAlumnos.setModel(modelo);
+
         } catch (SQLException ex) {
-            Logger.getLogger(MySql.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(MenuAplicacion.class
+                    .getName()).log(Level.SEVERE, null, ex);
         }
+
     }
 
-    public static void meterDatos(String nombre, String apellidos, String telefono, String direccion, String sexo, String dni) {
+    public static void meterDatos(String nombre, String apellidos, String telefono, String direccion, String sexo, String dni, String path) {
 
         try {
-            Statement st1 = (com.mysql.jdbc.Statement) bbdd.MySql.conexion.createStatement();
 
             //SACAMOS EL ÚLTIMO ID DE LA BASE DE DATOS
             //PUESTO QUE ES TIPO VARCHAR NECESITAMOS PASARLO A INTEGER PARA PODER OPERAR
-            ResultSet rs = st1.executeQuery("select CAST(id_alumno AS UNSIGNED) FROM janillo.al_alumnos ORDER BY id_alumno DESC LIMIT 1");
+            ResultSet rs = connect.st.executeQuery("select CAST(id_alumno AS UNSIGNED) FROM janillo.al_alumnos ORDER BY id_alumno DESC LIMIT 1");
             while (rs.next()) {
+
                 id = rs.getInt(1) + 1;
                 //NOS DEVUELVE UN NUEVO ID PASADO A STRING
                 idBis = String.valueOf(id);
             }
-            
+
             //NOS INTERESA QUE EN LA BASE DE DATOS
             //TODO SE GUARDE EN MAYÚSCULAS
             //DE AHÍ LA FUNCIÓN UPPER
@@ -70,12 +126,17 @@ public class MySql {
                     + "upper(\"" + direccion + "\"), "
                     + "upper(\"" + sexo + "\"), "
                     + "upper(\"" + dni + "\"))";
-            Statement st = (Statement) conexion.createStatement();
-            st.executeUpdate(Query);
-            JOptionPane.showMessageDialog(null, "Datos almacenados de forma exitosa");
+            try {
+                
+                connect.st.executeUpdate(Query);
+            } catch (SQLException ex) {
+                Logger.getLogger(MySql.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
         } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(null, "Error en el almacenamiento de datos" + ex);
+            Logger.getLogger(MySql.class.getName()).log(Level.SEVERE, null, ex);
         }
+
     }
 
     public static ResultSet consultar(String ID) {
@@ -85,8 +146,7 @@ public class MySql {
             String Query = "select id_alumno, nombre, apellidos, telefono, direccion,sexo,  dni from janillo.al_alumnos where "
                     + "id_alumno =\"" + ID + "\"";
 
-            Statement st = (Statement) conexion.createStatement();
-            rs = st.executeQuery(Query);
+            rs = connect.st.executeQuery(Query);
 
         } catch (SQLException ex) {
             JOptionPane.showMessageDialog(null, "Error en el almacenamiento de datos" + ex);
@@ -102,8 +162,7 @@ public class MySql {
             //LA PK LA NECESITAREMOS YA QUE SERÁ PARTE DE LA PK DE LA TABLA 'AL_MATERIAS'
             String Query = "select codigo_curso, nombre_curso from janillo.for_cursos";
 
-            Statement st = (Statement) conexion.createStatement();
-            rs = st.executeQuery(Query);
+            rs = connect.st.executeQuery(Query);
 
         } catch (SQLException ex) {
             JOptionPane.showMessageDialog(null, "Error alsacar datos" + ex);
@@ -120,8 +179,7 @@ public class MySql {
                     + " nombre_curso='" + nomcurso + "') and"
                     + " anho='" + anho + "'";
 
-            Statement st = (Statement) conexion.createStatement();
-            rs = st.executeQuery(Query);
+            rs = connect.st.executeQuery(Query);
 
         } catch (SQLException ex) {
             JOptionPane.showMessageDialog(null, "Error alsacar datos" + ex);
@@ -142,30 +200,24 @@ public class MySql {
         String codCurso = null;
         String codMateria = null;
         ResultSet rs1 = null;
-       
 
         try {
-            
-            //SACAMOS EL CÓDIGO DEL CURSO Y LO GUARDAMOS
-            Statement st1 = (com.mysql.jdbc.Statement) bbdd.MySql.conexion.createStatement();
 
+            //SACAMOS EL CÓDIGO DEL CURSO Y LO GUARDAMOS
             String Query = "select codigo_curso from janillo.for_cursos where"
                     + " nombre_curso='" + nomCurso + "'";
-            Statement st = (Statement) conexion.createStatement();
-            rs1 = st.executeQuery(Query);
+            rs1 = connect.st.executeQuery(Query);
             while (rs1.next()) {
                 codCurso = (rs1.getString(1));
             }
             //SACAMOS EL CÓDIGO DE LA MATERIA Y LO GUARDAMOS
             String Query2 = "select codigo_materia from janillo.for_materias where"
                     + " nombre_materia='" + nomMateria + "'";
-             st = (Statement) conexion.createStatement();
-             rs1 = st.executeQuery(Query2);
+            rs1 = connect.st.executeQuery(Query2);
             while (rs1.next()) {
                 codMateria = (rs1.getString(1));
             }
             //TENEMOS TODOS LOS DATOS PARA INTRODUCIRLOS EN LA TABLA
-            st1 = (com.mysql.jdbc.Statement) bbdd.MySql.conexion.createStatement();
 
             String Query3 = "INSERT INTO janillo.al_materias(id_alumno, codigo_curso, codigo_materia, nota_teorica, nota_practica,nota_trabajos, nota_final) VALUES("
                     + "upper(\"" + id2 + "\"), "
@@ -175,56 +227,52 @@ public class MySql {
                     + "upper(\"" + nPra + "\"), "
                     + "upper(\"" + nTra + "\"), "
                     + "upper(\"" + nFin + "\"))";
-            st = (Statement) conexion.createStatement();
-            st.executeUpdate(Query3);
+            connect.st.executeUpdate(Query3);
             JOptionPane.showMessageDialog(null, "Datos almacenados de forma exitosa");
         } catch (SQLException ex) {
             JOptionPane.showMessageDialog(null, "Error en el almacenamiento de datos" + ex);
         }
 
     }
-    public static void eliminarAlumno(String idAlumno){
-    PreparedStatement ps = null;
+
+    public static void eliminarAlumno(String idAlumno) {
+        PreparedStatement ps = null;
         try {
             //PRIMERO DEBEMOS ELIMINAR LOS REGISTROS
             //DE LA TABLA DE MATERIAS CONCERNIENTE AL ALUMNO
             //YA QUE POSEE UNA FOREIGN KEY  SINO NO PODRÍAMOS ELIMINAR AL ALUMNO
             String Query1 = "delete from janillo.al_materias where "
-                    +"id_alumno=\""+idAlumno+"\"";
-            Statement st = (Statement) conexion.createStatement();
-            st.executeUpdate(Query1);
+                    + "id_alumno=\"" + idAlumno + "\"";
+            connect.st.executeUpdate(Query1);
             JOptionPane.showMessageDialog(null, "Datos eliminados de forma exitosa");
             //LUEGO BORRAMOS AL ALUMNO
             String Query2 = "delete from janillo.al_alumnos where "
-                    +"id_alumno=\""+idAlumno+"\"";
-            st = (Statement) conexion.createStatement();
-            st.executeUpdate(Query2);
-          
+                    + "id_alumno=\"" + idAlumno + "\"";
+            connect.st.executeUpdate(Query2);
+
             JOptionPane.showMessageDialog(null, "Datos eliminados de forma exitosa");
         } catch (SQLException ex) {
             Logger.getLogger(MySql.class.getName()).log(Level.SEVERE, null, ex);
         }
-    
+
     }
-    
-    public static void modificarAlumno(String idAlumno,String nombre,String apellidos, String telefono, String direccion, String sexo, String dni){
-    
+
+    public static void modificarAlumno(String idAlumno, String nombre, String apellidos, String telefono, String direccion, String sexo, String dni, String path) {
+
         try {
 
             String Query1 = "update janillo.al_alumnos set "
-                    +"nombre=upper(\""+nombre+"\"), "
-                    +"apellidos=upper(\""+apellidos+"\"), "
-                    +"telefono=upper(\""+telefono+"\"), "
-                    +"direccion=upper(\""+direccion+"\"), "
-                    +"sexo=upper(\""+sexo+"\"), "
-                    +"dni=upper(\""+dni+"\") where "
-                    +"id_alumno=\""+idAlumno+"\"";
-            Statement st = (Statement) conexion.createStatement();
-            st.executeUpdate(Query1);
-            JOptionPane.showMessageDialog(null, "Datos actualizados de forma exitosa");
+                    + "nombre=upper(\"" + nombre + "\"), "
+                    + "apellidos=upper(\"" + apellidos + "\"), "
+                    + "telefono=upper(\"" + telefono + "\"), "
+                    + "direccion=upper(\"" + direccion + "\"), "
+                    + "sexo=upper(\"" + sexo + "\"), "
+                    + "dni=upper(\"" + dni + "\") where "
+                    + "id_alumno=\"" + idAlumno + "\"";
+            connect.st.executeUpdate(Query1);
         } catch (SQLException ex) {
             Logger.getLogger(MySql.class.getName()).log(Level.SEVERE, null, ex);
         }
-    
+
     }
 }

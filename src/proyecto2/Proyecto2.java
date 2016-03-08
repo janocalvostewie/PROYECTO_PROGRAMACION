@@ -5,10 +5,7 @@
  */
 package proyecto2;
 
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.io.*;
+import bbdd.MySql;
 
 /**
  *
@@ -20,16 +17,15 @@ public class Proyecto2 {
      * @param args the command line arguments
      */
     public static void main(String[] args){
-        try {
-            bbdd.MySql.conectarse();
-        } catch (Exception ex) {
-            Logger.getLogger(Proyecto2.class.getName()).log(Level.SEVERE, null, ex);
-        }
+      MySql base=new MySql();
 //File archivo= new File("C:\\listado.txt");
 //MenuAplicacion.leerFichero(archivo);
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(() -> {
-            new MenuAplicacion().setVisible(true);
+           MenuAplicacion menu= new MenuAplicacion();
+           
+           menu.setVisible(true);
+        
            
         });
        
