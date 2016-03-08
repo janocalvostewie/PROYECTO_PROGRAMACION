@@ -30,8 +30,13 @@ public class MySql {
     private static int id;
     private static String idBis;
 
+//            PUESTO QUE HE CREADO UNA LIBRERÍA CON LAS CONEXIONES A LA BASE DE DATOS
+//            ES NECESARIO INSTANCIAR UN OBJETO MEDIANTE EL CUAL LLAMAR A LAS FUNCIONES
+//            ADEMÁS, PUESTO QUE EL OBJETO 'STATEMENT' LO VAMOS A USAR MUCHO, LO SACAMOS DE ESTA LIBRERIA
     public MySql() {
         try {
+            //LANZAMOS EL MÉTODO QUE CREARÁ LA CONEXIÓN CON LA BASE DE DATOS GUARDÁNDOLA EN LA VARIABLE 'CONNECT'
+            //ADEMÁS DE INSTANCIAR UN OBJETO STATEMENT
             JanilloMySqlntb.conectarse(JOptionPane.showInputDialog("Introduzca base de datos"), JOptionPane.showInputDialog("Introduzca usuario"), JOptionPane.showInputDialog("Introduzca contraseña"));
         } catch (Exception ex) {
             Logger.getLogger(MySql.class.getName()).log(Level.SEVERE, null, ex);
@@ -127,7 +132,7 @@ public class MySql {
                     + "upper(\"" + sexo + "\"), "
                     + "upper(\"" + dni + "\"))";
             try {
-                
+
                 connect.st.executeUpdate(Query);
             } catch (SQLException ex) {
                 Logger.getLogger(MySql.class.getName()).log(Level.SEVERE, null, ex);
@@ -140,6 +145,8 @@ public class MySql {
     }
 
     public static ResultSet consultar(String ID) {
+
+        //NECESITAMOS QUE DEVUELVA LOS DATOS Y EL RESULTSET ES LA FORMA 
         ResultSet rs = null;
         try {
 
@@ -173,7 +180,8 @@ public class MySql {
     public static ResultSet listarMaterias(String nomcurso, String anho) {
         ResultSet rs = null;
         try {
-
+            //VERIFICAMOS EL CODIGO D ELA MATERIA Y EL AÑO PARA SABER QUÉ
+            //MATERIAS PERTENECEN AL CURSO
             String Query = "select codigo_materia, nombre_materia from janillo.for_materias where"
                     + " codigo_curso in (select codigo_curso from janillo.for_cursos where"
                     + " nombre_curso='" + nomcurso + "') and"
@@ -188,6 +196,7 @@ public class MySql {
     }
 
     public static void anhadirNotas(String id_alumno, String nombre_curso, String nombre_materia, float nota_teorica, float nota_practica, float nota_trabajos, float nota_final) {
+
         //ESTO LO PUSE PARA ACLARARME YO, CON EL NOMBRE DE LOS PARAMETROS LLEGARÍA
         //ME RESULTABA MÁS VISUAL TENERLOS AQUÍ
         String id2 = id_alumno;
@@ -240,7 +249,7 @@ public class MySql {
         try {
             //PRIMERO DEBEMOS ELIMINAR LOS REGISTROS
             //DE LA TABLA DE MATERIAS CONCERNIENTE AL ALUMNO
-            //YA QUE POSEE UNA FOREIGN KEY  SINO NO PODRÍAMOS ELIMINAR AL ALUMNO
+            //YA QUE POSEE UNA FOREIGN KEY,  SINO NO PODRÍAMOS ELIMINAR AL ALUMNO
             String Query1 = "delete from janillo.al_materias where "
                     + "id_alumno=\"" + idAlumno + "\"";
             connect.st.executeUpdate(Query1);
@@ -260,7 +269,9 @@ public class MySql {
     public static void modificarAlumno(String idAlumno, String nombre, String apellidos, String telefono, String direccion, String sexo, String dni, String path) {
 
         try {
-
+            //LO QUE HACEMOS CON ESTA QUERY  ES ACTUALIZAR TODOS LOS CAMPOS DE LA TABLA
+            // TANTO LO QUE SE HAYA MODIFICADO COMO LO QUE NO
+            //SI NO SE HA MODIFICADO EN EL FORMULARIO SE ACTUALIZARÁ CON EL MISMO VALOR
             String Query1 = "update janillo.al_alumnos set "
                     + "nombre=upper(\"" + nombre + "\"), "
                     + "apellidos=upper(\"" + apellidos + "\"), "
