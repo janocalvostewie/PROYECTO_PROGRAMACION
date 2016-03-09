@@ -20,7 +20,9 @@ public class CargarFoto extends javax.swing.JFrame {
         initComponents();
     }
     
-    public static Image iconToImage(Icon icon) {
+   
+    
+    public static Image iconoAImagen(Icon icon) {
           if (icon instanceof ImageIcon) {
               return ((ImageIcon)icon).getImage();
           } else {

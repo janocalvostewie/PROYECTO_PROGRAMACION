@@ -27,8 +27,6 @@ import static proyecto2.MenuAplicacion.tablaListaAlumnos;
 public class MySql {
 
     public static JanilloMySqlntb connect = new JanilloMySqlntb();
-    private static int id;
-    private static String idBis;
 
 //            PUESTO QUE HE CREADO UNA LIBRERÍA CON LAS CONEXIONES A LA BASE DE DATOS
 //            ES NECESARIO INSTANCIAR UN OBJETO MEDIANTE EL CUAL LLAMAR A LAS FUNCIONES
@@ -72,6 +70,7 @@ public class MySql {
                     + " al.nota_trabajos,al.nota_teorica,al.nota_practica,al.nota_final"
                     + " from al_alumnos aa left join  al_materias al on aa.id_alumno=al.id_alumno, for_materias fm"
                     + " where fm.codigo_materia=al.codigo_materia"
+                    + " and fm.codigo_curso=al.codigo_curso"
                     + " order by aa.id_alumno");
             //POR CADA LÍNEA DEVUELTA DE LA QUERY LA INTRODUCIRÁ EN EL ARRAY
             //CREAMOS UN BUCLE
@@ -108,39 +107,24 @@ public class MySql {
 
     public static void meterDatos(String nombre, String apellidos, String telefono, String direccion, String sexo, String dni, String path) {
 
+        //NOS INTERESA QUE EN LA BASE DE DATOS
+        //TODO SE GUARDE EN MAYÚSCULAS
+        //DE AHÍ LA FUNCIÓN UPPER
+        String Query = "INSERT INTO janillo.al_alumnos(nombre, apellidos, telefono, direccion,sexo, dni,foto) VALUES("
+                + "upper(\"" + nombre + "\"), "
+                + "upper(\"" + apellidos + "\"), "
+                + "upper(\"" + telefono + "\"), "
+                + "upper(\"" + direccion + "\"), "
+                + "upper(\"" + sexo + "\"), "
+                + "upper(\"" + dni + "\"), "
+                +"\"" + path + "\")";
         try {
 
-            //SACAMOS EL ÚLTIMO ID DE LA BASE DE DATOS
-            //PUESTO QUE ES TIPO VARCHAR NECESITAMOS PASARLO A INTEGER PARA PODER OPERAR
-            ResultSet rs = connect.st.executeQuery("select CAST(id_alumno AS UNSIGNED) FROM janillo.al_alumnos ORDER BY id_alumno DESC LIMIT 1");
-            while (rs.next()) {
-
-                id = rs.getInt(1) + 1;
-                //NOS DEVUELVE UN NUEVO ID PASADO A STRING
-                idBis = String.valueOf(id);
-            }
-
-            //NOS INTERESA QUE EN LA BASE DE DATOS
-            //TODO SE GUARDE EN MAYÚSCULAS
-            //DE AHÍ LA FUNCIÓN UPPER
-            String Query = "INSERT INTO janillo.al_alumnos(id_alumno, nombre, apellidos, telefono, direccion,sexo, dni) VALUES("
-                    + "upper(\"" + idBis + "\"), "
-                    + "upper(\"" + nombre + "\"), "
-                    + "upper(\"" + apellidos + "\"), "
-                    + "upper(\"" + telefono + "\"), "
-                    + "upper(\"" + direccion + "\"), "
-                    + "upper(\"" + sexo + "\"), "
-                    + "upper(\"" + dni + "\"))";
-            try {
-
-                connect.st.executeUpdate(Query);
-            } catch (SQLException ex) {
-                Logger.getLogger(MySql.class.getName()).log(Level.SEVERE, null, ex);
-            }
-
+            connect.st.executeUpdate(Query);
         } catch (SQLException ex) {
             Logger.getLogger(MySql.class.getName()).log(Level.SEVERE, null, ex);
         }
+        JOptionPane.showMessageDialog(null, "Alumno añadido");
 
     }
 
@@ -150,7 +134,7 @@ public class MySql {
         ResultSet rs = null;
         try {
 
-            String Query = "select id_alumno, nombre, apellidos, telefono, direccion,sexo,  dni from janillo.al_alumnos where "
+            String Query = "select id_alumno, nombre, apellidos, telefono, direccion,sexo,  dni,foto from janillo.al_alumnos where "
                     + "id_alumno =\"" + ID + "\"";
 
             rs = connect.st.executeQuery(Query);
@@ -195,11 +179,11 @@ public class MySql {
         return rs;
     }
 
-    public static void anhadirNotas(String id_alumno, String nombre_curso, String nombre_materia, float nota_teorica, float nota_practica, float nota_trabajos, float nota_final) {
+    public static void anhadirNotas(int id_alumno, String nombre_curso, String nombre_materia, float nota_teorica, float nota_practica, float nota_trabajos, float nota_final) {
 
         //ESTO LO PUSE PARA ACLARARME YO, CON EL NOMBRE DE LOS PARAMETROS LLEGARÍA
         //ME RESULTABA MÁS VISUAL TENERLOS AQUÍ
-        String id2 = id_alumno;
+        int id2 = id_alumno;
         float nTra = nota_trabajos;
         float nPra = nota_practica;
         float nTeo = nota_teorica;
@@ -229,7 +213,7 @@ public class MySql {
             //TENEMOS TODOS LOS DATOS PARA INTRODUCIRLOS EN LA TABLA
 
             String Query3 = "INSERT INTO janillo.al_materias(id_alumno, codigo_curso, codigo_materia, nota_teorica, nota_practica,nota_trabajos, nota_final) VALUES("
-                    + "upper(\"" + id2 + "\"), "
+                    + "" + id2 + ", "
                     + "upper(\"" + codCurso + "\"), "
                     + "upper(\"" + codMateria + "\"), "
                     + "upper(\"" + nTeo + "\"), "
@@ -245,6 +229,7 @@ public class MySql {
     }
 
     public static void eliminarAlumno(String idAlumno) {
+        int idalumno = Integer.parseInt(idAlumno);
         PreparedStatement ps = null;
         try {
             //PRIMERO DEBEMOS ELIMINAR LOS REGISTROS
@@ -267,7 +252,7 @@ public class MySql {
     }
 
     public static void modificarAlumno(String idAlumno, String nombre, String apellidos, String telefono, String direccion, String sexo, String dni, String path) {
-
+        int id_alumno = Integer.parseInt(idAlumno);
         try {
             //LO QUE HACEMOS CON ESTA QUERY  ES ACTUALIZAR TODOS LOS CAMPOS DE LA TABLA
             // TANTO LO QUE SE HAYA MODIFICADO COMO LO QUE NO
@@ -278,6 +263,7 @@ public class MySql {
                     + "telefono=upper(\"" + telefono + "\"), "
                     + "direccion=upper(\"" + direccion + "\"), "
                     + "sexo=upper(\"" + sexo + "\"), "
+                    + "foto=\"" + path + "\", "
                     + "dni=upper(\"" + dni + "\") where "
                     + "id_alumno=\"" + idAlumno + "\"";
             connect.st.executeUpdate(Query1);
