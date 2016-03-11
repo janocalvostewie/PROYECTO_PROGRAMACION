@@ -31,6 +31,10 @@ public class MySql {
 //            PUESTO QUE HE CREADO UNA LIBRERÍA CON LAS CONEXIONES A LA BASE DE DATOS
 //            ES NECESARIO INSTANCIAR UN OBJETO MEDIANTE EL CUAL LLAMAR A LAS FUNCIONES
 //            ADEMÁS, PUESTO QUE EL OBJETO 'STATEMENT' LO VAMOS A USAR MUCHO, LO SACAMOS DE ESTA LIBRERIA
+    
+    /**
+     * Constructor básico de la clase
+     */
     public MySql() {
         try {
             //LANZAMOS EL MÉTODO QUE CREARÁ LA CONEXIÓN CON LA BASE DE DATOS GUARDÁNDOLA EN LA VARIABLE 'CONNECT'
@@ -40,7 +44,12 @@ public class MySql {
             Logger.getLogger(MySql.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-
+/**
+ * Crea una tabla y su modelo.
+ * Realiza una consulta a la base de datos y va insertando en la tabla fila a fila
+ * los datos devueltos.
+ * Finalmente aplica los cambios a la tabla.
+ */
     public static void tabla() {
 
         //CREAMOS USANDO UNA PREDETERMINADA UN MODELO PARA LA JTABLE
@@ -104,7 +113,16 @@ public class MySql {
         }
 
     }
-
+/**
+ * Inserta datos en la bbdd
+ * @param nombre
+ * @param apellidos
+ * @param telefono
+ * @param direccion
+ * @param sexo
+ * @param dni
+ * @param path 
+ */
     public static void meterDatos(String nombre, String apellidos, String telefono, String direccion, String sexo, String dni, String path) {
 
         //NOS INTERESA QUE EN LA BASE DE DATOS
@@ -127,7 +145,11 @@ public class MySql {
         JOptionPane.showMessageDialog(null, "Alumno añadido");
 
     }
-
+/**
+ * Método básico de consulta a la bbdd sore una tabla pasándole un parámetro PK
+ * @param ID PK para la consulta
+ * @return 
+ */
     public static ResultSet consultar(String ID) {
 
         //NECESITAMOS QUE DEVUELVA LOS DATOS Y EL RESULTSET ES LA FORMA 
@@ -145,7 +167,10 @@ public class MySql {
         return rs;
 
     }
-
+/**
+ * Consulta los cursos disponibles
+ * @return 
+ */
     public static ResultSet listarCursos() {
         ResultSet rs = null;
         try {
@@ -160,7 +185,12 @@ public class MySql {
         }
         return rs;
     }
-
+/**
+ * Consulta las materias disponibles
+ * @param nomcurso Filtro para la consulta
+ * @param anho Filtro para la consulta
+ * @return Devuelve una serie de datos dependiendo de los parámetros pasados
+ */
     public static ResultSet listarMaterias(String nomcurso, String anho) {
         ResultSet rs = null;
         try {
@@ -178,7 +208,16 @@ public class MySql {
         }
         return rs;
     }
-
+/**
+ * Añade datos a la bbdd
+ * @param id_alumno
+ * @param nombre_curso
+ * @param nombre_materia
+ * @param nota_teorica
+ * @param nota_practica
+ * @param nota_trabajos
+ * @param nota_final 
+ */
     public static void anhadirNotas(int id_alumno, String nombre_curso, String nombre_materia, float nota_teorica, float nota_practica, float nota_trabajos, float nota_final) {
 
         //ESTO LO PUSE PARA ACLARARME YO, CON EL NOMBRE DE LOS PARAMETROS LLEGARÍA
@@ -227,7 +266,10 @@ public class MySql {
         }
 
     }
-
+/**
+ * Elimina datos de la bbdd
+ * @param idAlumno 
+ */
     public static void eliminarAlumno(String idAlumno) {
         int idalumno = Integer.parseInt(idAlumno);
         PreparedStatement ps = null;
@@ -250,7 +292,17 @@ public class MySql {
         }
 
     }
-
+/**
+ * Modifica datos de la bbdd
+ * @param idAlumno
+ * @param nombre
+ * @param apellidos
+ * @param telefono
+ * @param direccion
+ * @param sexo
+ * @param dni
+ * @param path 
+ */
     public static void modificarAlumno(String idAlumno, String nombre, String apellidos, String telefono, String direccion, String sexo, String dni, String path) {
         int id_alumno = Integer.parseInt(idAlumno);
         try {

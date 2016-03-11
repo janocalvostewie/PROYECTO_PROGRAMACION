@@ -6,6 +6,10 @@ package proyecto2;
  */
 public class CargaArchivos extends javax.swing.JPanel {
 
+    
+    
+    
+    
     public CargaArchivos() {
         initComponents();
     }
